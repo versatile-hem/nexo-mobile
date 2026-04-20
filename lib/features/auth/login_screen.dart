@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -112,19 +113,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
+    final username = _usernameCtrl.text.trim().toLowerCase();
+    final password = _passwordCtrl.text.trim();
+
+    if (kDebugMode) {
+      debugPrint('[AUTH] submit username=$username');
+    }
+
     await ref
         .read(authControllerProvider.notifier)
         .login(
-          username: _usernameCtrl.text.trim(),
-          password: _passwordCtrl.text,
+          username: username,
+          password: password,
         );
   }
 
   String _parseError(Object error) {
     if (error is DioException) {
       final dynamic payload = error.response?.data;
-      if (payload is Map<String, dynamic> && payload['message'] != null) {
-        return payload['message'].toString();
+      if (payload is Map) {
+        final asMap = Map<String, dynamic>.from(payload);
+        if (asMap['message'] != null) {
+          return asMap['message'].toString();
+        }
+        if (asMap['error'] != null) {
+          return asMap['error'].toString();
+        }
       }
       return error.message ?? 'Login failed';
     }

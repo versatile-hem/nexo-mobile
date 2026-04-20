@@ -11,9 +11,9 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(authControllerProvider).valueOrNull;
-    final roles = session?.roles ?? const <String>[];
-    final isOperationManager = roles.contains('operation_manager');
-    final isFse = roles.contains('field_sales_executive');
+    final auth = ref.read(authControllerProvider.notifier);
+    final isOperationManager = auth.hasRole('operation_manager');
+    final isFse = auth.hasRole('field_sales_executive');
 
     final tiles = <DashboardItem>[
       if (isOperationManager)

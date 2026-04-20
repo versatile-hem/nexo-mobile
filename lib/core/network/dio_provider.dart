@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/auth_controller.dart';
@@ -27,9 +28,33 @@ final dioProvider = Provider<Dio>((ref) {
         if (latestSession != null) {
           options.headers['Authorization'] = 'Bearer ${latestSession.token}';
         }
+
+        if (kDebugMode) {
+          debugPrint(
+            '[API] ${options.method} ${options.baseUrl}${options.path} '
+            'query=${options.queryParameters} body=${options.data}',
+          );
+        }
         handler.next(options);
       },
+      onResponse: (response, handler) {
+        if (kDebugMode) {
+          debugPrint(
+            '[API] ${response.statusCode} ${response.requestOptions.path} '
+            'data=${response.data}',
+          );
+        }
+        handler.next(response);
+      },
       onError: (error, handler) {
+        if (kDebugMode) {
+          debugPrint(
+            '[API][ERROR] ${error.requestOptions.path} '
+            'status=${error.response?.statusCode} '
+            'message=${error.message} data=${error.response?.data}',
+          );
+        }
+
         if (error.response?.statusCode == 401) {
           ref.read(authControllerProvider.notifier).logout(silent: true);
         }

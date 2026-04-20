@@ -48,6 +48,24 @@ class AuthController extends AsyncNotifier<AuthSession?> {
 
   bool hasRole(String role) {
     final roles = state.valueOrNull?.roles ?? const <String>[];
-    return roles.contains(role);
+    final expected = _normalizeRole(role);
+    if (expected.isEmpty) {
+      return false;
+    }
+
+    return roles.any((value) => _normalizeRole(value) == expected);
+  }
+
+  String _normalizeRole(String role) {
+    var value = role.trim();
+    if (value.isEmpty) {
+      return '';
+    }
+
+    if (value.startsWith('ROLE_')) {
+      value = value.substring(5);
+    }
+
+    return value.toLowerCase();
   }
 }
